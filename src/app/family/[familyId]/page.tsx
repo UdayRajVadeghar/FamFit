@@ -342,6 +342,17 @@ export default function FamilyPage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* View Family Status */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <Button
+                onClick={() => router.push(`/family/${familyId}/status`)}
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              >
+                <TrendingUp size={16} className="mr-2" />
+                View Family Status
+              </Button>
+            </div>
+
             {/* Invite Code */}
             <div className="bg-white rounded-xl shadow-sm p-6 ">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
