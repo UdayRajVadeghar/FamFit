@@ -1,5 +1,6 @@
 import Dashboard from "@/components/Dashboard";
-import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/nextjs";
+import ProfileButton from "@/components/ProfileButton";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 
 export default function HomePage() {
   return (
@@ -10,6 +11,11 @@ export default function HomePage() {
 
       <SignedOut>
         <div className="min-h-screen bg-white">
+          {/* Profile Button - Top Right */}
+          <div className="fixed top-4 right-4 z-50">
+            <ProfileButton />
+          </div>
+          
           {/* Hero Section */}
           <div className="px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
             <div className="max-w-7xl mx-auto">
@@ -21,37 +27,10 @@ export default function HomePage() {
                     Family Gym
                   </h1>
 
-                  <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-xl">
+                  <p className="text-lg sm:text-xl text-gray-600 mb-16 max-w-xl">
                     Track your fitness journey, manage workouts, and stay
                     motivated with your family's fitness goals all in one place.
                   </p>
-
-                  {/* Action Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-4 mb-16">
-                    <SignUpButton>
-                      <button className="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors font-medium">
-                        Get started
-                      </button>
-                    </SignUpButton>
-                    <SignInButton>
-                      <button className="flex items-center text-gray-700 hover:text-gray-900 font-medium group">
-                        Sign In
-                        <svg
-                          className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 5l7 7-7 7"
-                          />
-                        </svg>
-                      </button>
-                    </SignInButton>
-                  </div>
 
                   {/* Statistics */}
                   <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CreateFamilyModal } from "./CreateFamilyModal";
 import { JoinFamilyModal } from "./JoinFamilyModal";
+import ProfileButton from "./ProfileButton";
 
 interface Family {
   id: string;
@@ -51,6 +52,11 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
+      {/* Profile Button - Top Right */}
+      <div className="fixed top-4 right-4 z-50">
+        <ProfileButton showWelcome={true} />
+      </div>
+      
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">

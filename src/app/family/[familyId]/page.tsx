@@ -1,6 +1,7 @@
 "use client";
 
 import ActivityGraph from "@/components/ActivityGraph";
+import ProfileButton from "@/components/ProfileButton";
 import { Button } from "@/components/ui/button";
 import WorkoutProgressModal from "@/components/WorkoutProgressModal";
 import { useUser } from "@clerk/nextjs";
@@ -212,6 +213,7 @@ export default function FamilyPage() {
                   Settings
                 </Button>
               )}
+              <ProfileButton />
             </div>
           </div>
         </div>
