@@ -1,8 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Modal } from "@/components/ui/modal";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -92,73 +97,78 @@ export function CreateFamilyModal({ isOpen, onClose }: CreateFamilyModalProps) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Create New Family">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {errors.general && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            {errors.general}
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="bg-white sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Create New Family</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {errors.general && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {errors.general}
+            </div>
+          )}
+
+          <Input
+            label="Family Name *"
+            value={formData.name}
+            onChange={(e) => handleInputChange("name", e.target.value)}
+            placeholder="Enter your family name"
+            error={errors.name}
+            required
+          />
+
+          <Textarea
+            label="Description"
+            value={formData.description}
+            onChange={(e) => handleInputChange("description", e.target.value)}
+            placeholder="Describe your family (optional)"
+            rows={3}
+            error={errors.description}
+          />
+
+          <Textarea
+            label="Fitness Goal"
+            value={formData.goal}
+            onChange={(e) => handleInputChange("goal", e.target.value)}
+            placeholder="What are your family's fitness goals? (optional)"
+            rows={3}
+            error={errors.goal}
+          />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Start Date"
+              type="date"
+              value={formData.startDate}
+              onChange={(e) => handleInputChange("startDate", e.target.value)}
+              error={errors.startDate}
+            />
+
+            <Input
+              label="End Date"
+              type="date"
+              value={formData.endDate}
+              onChange={(e) => handleInputChange("endDate", e.target.value)}
+              error={errors.endDate}
+            />
           </div>
-        )}
 
-        <Input
-          label="Family Name *"
-          value={formData.name}
-          onChange={(e) => handleInputChange("name", e.target.value)}
-          placeholder="Enter your family name"
-          error={errors.name}
-          required
-        />
-
-        <Textarea
-          label="Description"
-          value={formData.description}
-          onChange={(e) => handleInputChange("description", e.target.value)}
-          placeholder="Describe your family (optional)"
-          rows={3}
-          error={errors.description}
-        />
-
-        <Textarea
-          label="Fitness Goal"
-          value={formData.goal}
-          onChange={(e) => handleInputChange("goal", e.target.value)}
-          placeholder="What are your family's fitness goals? (optional)"
-          rows={3}
-          error={errors.goal}
-        />
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Input
-            label="Start Date"
-            type="date"
-            value={formData.startDate}
-            onChange={(e) => handleInputChange("startDate", e.target.value)}
-            error={errors.startDate}
-          />
-
-          <Input
-            label="End Date"
-            type="date"
-            value={formData.endDate}
-            onChange={(e) => handleInputChange("endDate", e.target.value)}
-            error={errors.endDate}
-          />
-        </div>
-
-        <div className="flex justify-end space-x-3 pt-4">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={handleClose}
-            disabled={loading}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" loading={loading} disabled={loading}>
-            Create Family
-          </Button>
-        </div>
-      </form>
-    </Modal>
+          <div className="flex justify-end space-x-3 pt-4">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleClose}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" loading={loading} disabled={loading}>
+              Create Family
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

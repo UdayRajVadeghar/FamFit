@@ -1,8 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Modal } from "@/components/ui/modal";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -59,48 +64,53 @@ export function JoinFamilyModal({ isOpen, onClose }: JoinFamilyModalProps) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Join Family">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="text-center mb-6">
-          <p className="text-gray-600">
-            Enter the invite code shared by your family admin to join their
-            fitness journey.
-          </p>
-        </div>
-
-        {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            {error}
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="bg-white sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Join Family</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="text-center mb-6">
+            <p className="text-gray-600">
+              Enter the invite code shared by your family admin to join their
+              fitness journey.
+            </p>
           </div>
-        )}
 
-        <Input
-          label="Invite Code"
-          value={inviteCode}
-          onChange={(e) => setInviteCode(e.target.value)}
-          placeholder="Enter invite code"
-          error={error ? "" : undefined}
-          required
-        />
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {error}
+            </div>
+          )}
 
-        <div className="flex justify-end space-x-3 pt-4">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={handleClose}
-            disabled={loading}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            loading={loading}
-            disabled={loading || !inviteCode.trim()}
-          >
-            Join Family
-          </Button>
-        </div>
-      </form>
-    </Modal>
+          <Input
+            label="Invite Code"
+            value={inviteCode}
+            onChange={(e) => setInviteCode(e.target.value)}
+            placeholder="Enter invite code"
+            error={error ? "" : undefined}
+            required
+          />
+
+          <div className="flex justify-end space-x-3 pt-4">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleClose}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              loading={loading}
+              disabled={loading || !inviteCode.trim()}
+            >
+              Join Family
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
