@@ -23,7 +23,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={`${inter.className} antialiased`}>
-          <Navbar />
+          <Navbar mb-10 />
           {children}
         </body>
       </html>

@@ -6,16 +6,17 @@ import {
   SignedIn,
   SignedOut,
   UserButton,
+  useUser,
 } from "@clerk/nextjs";
 import { useState } from "react";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user } = useUser();
 
   return (
     <nav className="px-4 sm:px-6 lg:px-8 py-4 bg-white border-b border-gray-100">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Logo */}
         <div className="flex items-center space-x-2">
           <div className="w-6 h-6 bg-gray-800 rounded flex items-center justify-center">
             <svg
@@ -31,7 +32,6 @@ export default function Navbar() {
           </span>
         </div>
 
-        {/* Navigation Links */}
         <div className="hidden md:flex items-center space-x-8">
           <a
             href="#"
@@ -65,7 +65,6 @@ export default function Navbar() {
           </a>
         </div>
 
-        {/* Auth Buttons - Desktop */}
         <div className="hidden md:flex items-center space-x-4">
           <SignedOut>
             <SignInButton>
@@ -80,11 +79,15 @@ export default function Navbar() {
             </SignUpButton>
           </SignedOut>
           <SignedIn>
-            <UserButton />
+            <div className="flex items-center space-x-3">
+              <span className="text-gray-700 font-medium">
+                {user?.firstName || "User"}
+              </span>
+              <UserButton />
+            </div>
           </SignedIn>
         </div>
 
-        {/* Mobile Menu Button */}
         <div className="md:hidden">
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -116,7 +119,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-200 py-4 mt-4">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -165,7 +167,10 @@ export default function Navbar() {
                   </SignUpButton>
                 </SignedOut>
                 <SignedIn>
-                  <div className="flex items-center justify-center">
+                  <div className="flex items-center justify-center space-x-3 py-2">
+                    <span className="text-gray-700 font-medium">
+                      {user?.firstName || "User"}
+                    </span>
                     <UserButton />
                   </div>
                 </SignedIn>
