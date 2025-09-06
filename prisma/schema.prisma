@@ -14,23 +14,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Example models - you can modify these based on your needs
-model User {
-  id        Int      @id @default(autoincrement())
+model users {
+  id        String   @id  
   email     String   @unique
   name      String?
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  posts     Post[]
+  updatedAt DateTime @updatedAt @default(now())
+  family    Family[]
 }
 
-model Post {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  Int
-  author    User     @relation(fields: [authorId], references: [id])
+
+model Family{
+  id        String      @id @default(uuid())
+  familyId  String      @unique
+  name      String 
+  goal      String?
+  startDate DateTime?
+  endDate   DateTime?
+  isActive  Boolean @default(true)
+  members   users[]
+  createdBy String?   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
 }
+
