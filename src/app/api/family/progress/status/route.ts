@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const familyId = searchParams.get("familyId");
+    const period = searchParams.get("period") || "30d";
 
     if (!familyId) {
       return NextResponse.json(
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest) {
             id: true,
             name: true,
             isActive: true,
+            createdAt: true,
           },
         },
       },
@@ -70,14 +72,48 @@ export async function GET(request: NextRequest) {
       endDate.setHours(23, 59, 59, 999);
     }
 
-    const startDate = new Date(endDate);
-    startDate.setDate(endDate.getDate() - 30);
-    startDate.setHours(0, 0, 0, 0);
+    let startDate: Date = new Date();
+    let daysToSubtract: number;
+
+    switch (period) {
+      case "7d":
+        daysToSubtract = 6;
+        break;
+      case "30d":
+        daysToSubtract = 29;
+        break;
+      case "90d":
+        daysToSubtract = 89;
+        break;
+      case "1m":
+        daysToSubtract = 29;
+        break;
+      case "2m":
+        daysToSubtract = 59;
+        break;
+      case "3m":
+        daysToSubtract = 89;
+        break;
+      case "all":
+        startDate = new Date(familyMember.family.createdAt || new Date());
+        startDate.setHours(0, 0, 0, 0);
+        daysToSubtract = 0;
+        break;
+      default:
+        daysToSubtract = 29;
+    }
+
+    if (period !== "all") {
+      startDate = new Date(endDate);
+      startDate.setDate(endDate.getDate() - daysToSubtract);
+      startDate.setHours(0, 0, 0, 0);
+    }
 
     console.log("Status fetch range:", {
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
       familyId,
+      period,
     });
 
     const familyMembers = await prisma.familyMember.findMany({
@@ -231,6 +267,7 @@ export async function GET(request: NextRequest) {
 
     const responseData = {
       familyName: familyMember.family.name,
+      familyCreatedAt: familyMember.family.createdAt?.toISOString(),
       totalMembers: familyMembers.length,
       dateRange: {
         start: startDate.toISOString(),

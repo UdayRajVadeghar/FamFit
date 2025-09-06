@@ -39,6 +39,7 @@ interface MemberProgress {
 
 interface FamilyStatusData {
   familyName: string;
+  familyCreatedAt: string;
   totalMembers: number;
   dateRange: {
     start: string;
@@ -53,6 +54,14 @@ interface FamilyStatusData {
   };
 }
 
+type TimePeriod = "7d" | "30d" | "90d" | "1m" | "2m" | "3m" | "all";
+
+interface TimePeriodOption {
+  value: TimePeriod;
+  label: string;
+  description: string;
+}
+
 export default function FamilyStatusPage() {
   const params = useParams();
   const router = useRouter();
@@ -61,20 +70,31 @@ export default function FamilyStatusPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>("30d");
 
   const familyId = params.familyId as string;
+
+  const timePeriodOptions: TimePeriodOption[] = [
+    { value: "7d", label: "7 Days", description: "Last 7 days" },
+    { value: "30d", label: "30 Days", description: "Last 30 days" },
+    { value: "90d", label: "90 Days", description: "Last 3 months" },
+    { value: "1m", label: "1 Month", description: "Last month" },
+    { value: "2m", label: "2 Months", description: "Last 2 months" },
+    { value: "3m", label: "3 Months", description: "Last 3 months" },
+    { value: "all", label: "All Time", description: "Since family creation" },
+  ];
 
   useEffect(() => {
     if (familyId) {
       fetchFamilyStatus();
     }
-  }, [familyId]);
+  }, [familyId, selectedPeriod]);
 
   const fetchFamilyStatus = async () => {
     try {
       setLoading(true);
       const response = await fetch(
-        `/api/family/progress/status?familyId=${familyId}`
+        `/api/family/progress/status?familyId=${familyId}&period=${selectedPeriod}`
       );
 
       if (response.ok) {
@@ -194,10 +214,33 @@ export default function FamilyStatusPage() {
                 <h1 className="text-2xl font-bold text-gray-900">
                   {statusData.familyName} - Family Status
                 </h1>
-                <p className="text-gray-600">30-Day Progress Overview</p>
+                <p className="text-gray-600">
+                  {
+                    timePeriodOptions.find(
+                      (opt) => opt.value === selectedPeriod
+                    )?.description
+                  }{" "}
+                  Progress Overview
+                </p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
+              {/* Time Period Selector */}
+              <select
+                value={selectedPeriod}
+                onChange={(e) =>
+                  setSelectedPeriod(e.target.value as TimePeriod)
+                }
+                className="border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                disabled={loading || refreshing}
+              >
+                {timePeriodOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+
               <Button
                 onClick={handleRefresh}
                 variant="outline"
@@ -297,7 +340,20 @@ export default function FamilyStatusPage() {
                 {new Date(statusData.dateRange.end).toLocaleDateString()}
               </span>
             </div>
-            <span className="text-sm text-gray-500">Last 30 days</span>
+            <div className="flex items-center space-x-4">
+              {statusData.familyCreatedAt && (
+                <span className="text-xs text-gray-500">
+                  Family created:{" "}
+                  {new Date(statusData.familyCreatedAt).toLocaleDateString()}
+                </span>
+              )}
+              <span className="text-sm text-gray-500">
+                {
+                  timePeriodOptions.find((opt) => opt.value === selectedPeriod)
+                    ?.description
+                }
+              </span>
+            </div>
           </div>
         </div>
 
@@ -416,7 +472,11 @@ export default function FamilyStatusPage() {
               No Progress Data
             </h3>
             <p className="text-gray-600 mb-6">
-              No family members have logged workouts in the last 30 days.
+              No family members have logged workouts in the{" "}
+              {timePeriodOptions
+                .find((opt) => opt.value === selectedPeriod)
+                ?.description.toLowerCase()}
+              .
             </p>
             <Button onClick={() => router.push(`/family/${familyId}`)}>
               Back to Family Dashboard
