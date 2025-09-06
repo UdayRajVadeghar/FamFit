@@ -1,103 +1,105 @@
-import Image from "next/image";
-
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-white">
+      {/* Hero Section */}
+      <div className="px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div className="text-left">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
+                Simplify your workflow. <br className="hidden sm:block" />
+                Amplify your impact.
+              </h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+              <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-xl">
+                Connect all your data sources in one place and get real-time
+                insights that drive smarter actions.
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 mb-16">
+                <button className="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors font-medium">
+                  Get started
+                </button>
+                <button className="flex items-center text-gray-700 hover:text-gray-900 font-medium group">
+                  Explore Features
+                  <svg
+                    className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Statistics */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <div className="grid grid-cols-3 gap-6">
+                  <div className="text-center">
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+                      4.9
+                    </div>
+                    <div className="text-sm text-gray-600">User Reviews</div>
+                  </div>
+                  <div className="text-center border-l border-gray-200">
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+                      100K
+                    </div>
+                    <div className="text-sm text-gray-600">Active users</div>
+                  </div>
+                  <div className="text-center border-l border-gray-200">
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+                      50+
+                    </div>
+                    <div className="text-sm text-gray-600">Data points</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side - Decorative Elements */}
+            <div className="relative hidden lg:block">
+              <div className="relative">
+                {/* Large geometric shape */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-80 h-80 border-2 border-gray-200 rounded-3xl transform rotate-12 opacity-60"></div>
+                </div>
+
+                {/* Centered icon/app mockup */}
+                <div className="relative z-10 flex items-center justify-center h-80">
+                  <div className="w-32 h-32 bg-white rounded-3xl shadow-lg flex items-center justify-center">
+                    <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center">
+                      <svg
+                        className="w-8 h-8 text-gray-400"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional decorative lines */}
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                  <div className="w-96 h-96 border border-gray-200 rounded-full opacity-30"></div>
+                </div>
+                <div className="absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-1/2">
+                  <div className="w-64 h-64 border border-gray-200 rounded-full opacity-20"></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
   );
 }
