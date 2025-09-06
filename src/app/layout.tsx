@@ -9,8 +9,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Family Gym App",
-  description: "Family Gym management application with Clerk authentication",
+  title: "FamFit",
+  description:
+    "FamFit - Family fitness management application with progress tracking",
 };
 
 export default function RootLayout({
@@ -21,9 +22,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className={`${inter.className} antialiased`}>
-          {children}
-        </body>
+        <body className={`${inter.className} antialiased`}>{children}</body>
       </html>
     </ClerkProvider>
   );

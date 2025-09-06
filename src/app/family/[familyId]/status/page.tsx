@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import ProfileButton from "@/components/ProfileButton";
+import { Button } from "@/components/ui/button";
 import { useUser } from "@clerk/nextjs";
 import {
   Activity,
@@ -254,7 +254,7 @@ export default function FamilyStatusPage() {
                 />
                 Refresh
               </Button>
-              
+
               <ProfileButton />
             </div>
           </div>
