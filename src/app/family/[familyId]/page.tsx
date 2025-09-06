@@ -245,6 +245,7 @@ export default function FamilyPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <WorkoutProgressModal
+                  familyId={familyId}
                   trigger={
                     <Button className="w-full">
                       <Activity className="mr-2 h-4 w-4" />
@@ -270,6 +271,7 @@ export default function FamilyPage() {
                 </h3>
                 <p className="text-gray-600 mb-4">Begin your fitness routine</p>
                 <WorkoutProgressModal
+                  familyId={familyId}
                   trigger={<Button className="w-full">Get Started</Button>}
                 />
               </div>

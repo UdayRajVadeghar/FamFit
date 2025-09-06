@@ -26,6 +26,7 @@ import { useState } from "react";
 
 interface WorkoutProgressModalProps {
   trigger?: React.ReactNode;
+  familyId: string;
 }
 
 interface WorkoutData {
@@ -52,6 +53,7 @@ const workoutTypes = [
 
 export default function WorkoutProgressModal({
   trigger,
+  familyId,
 }: WorkoutProgressModalProps) {
   const [open, setOpen] = useState(false);
   const [workoutData, setWorkoutData] = useState<WorkoutData>({
@@ -62,6 +64,7 @@ export default function WorkoutProgressModal({
     duration: "",
     rating: "",
   });
+  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (
@@ -76,25 +79,46 @@ export default function WorkoutProgressModal({
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setError("");
+
     try {
-      // Here you would typically save the workout data to your backend
-      console.log("Workout progress submitted:", workoutData);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Reset form and close modal
-      setWorkoutData({
-        progress: "",
-        checkInTime: new Date().toTimeString().slice(0, 5),
-        caloriesBurned: "",
-        workoutType: "",
-        duration: "",
-        rating: "",
+      const response = await fetch("/api/family/progress", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          progress: workoutData.progress,
+          checkInTime: workoutData.checkInTime,
+          caloriesBurned: workoutData.caloriesBurned,
+          workoutType: workoutData.workoutType,
+          duration: workoutData.duration,
+          rating: workoutData.rating,
+          familyId: familyId,
+        }),
       });
-      setOpen(false);
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log("Workout progress saved successfully:", data);
+
+        // Reset form and close modal
+        setWorkoutData({
+          progress: "",
+          checkInTime: new Date().toTimeString().slice(0, 5),
+          caloriesBurned: "",
+          workoutType: "",
+          duration: "",
+          rating: "",
+        });
+        setOpen(false);
+      } else {
+        setError(data.error || "Failed to save workout progress");
+      }
     } catch (error) {
-      console.error("Failed to submit workout progress:", error);
+      console.error("Network error while saving workout progress:", error);
+      setError("Network error. Please check your connection and try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -133,6 +157,13 @@ export default function WorkoutProgressModal({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
+          {/* Error Display */}
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+
           {/* Today's Progress */}
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
