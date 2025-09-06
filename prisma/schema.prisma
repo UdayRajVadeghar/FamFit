@@ -15,27 +15,41 @@ datasource db {
 }
 
 model users {
-  id        String   @id  
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt @default(now())
-  family    Family[]
+  id              String         @id  
+  email           String         @unique
+  name            String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt @default(now())
+  familyMemberships FamilyMember[]
+  createdFamilies Family[]       @relation("FamilyCreator")
 }
 
+model Family {
+  id          String         @id @default(uuid())
+  name        String 
+  description String?
+  goal        String?
+  startDate   DateTime?
+  endDate     DateTime?
+  isActive    Boolean        @default(true)
+  inviteCode  String         @unique @default(uuid())
+  createdBy   String   
+  creator     users          @relation("FamilyCreator", fields: [createdBy], references: [id])
+  members     FamilyMember[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
 
-model Family{
-  id        String      @id @default(uuid())
-  familyId  String      @unique
-  name      String 
-  goal      String?
-  startDate DateTime?
-  endDate   DateTime?
-  isActive  Boolean @default(true)
-  members   users[]
-  createdBy String?   
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+model FamilyMember {
+  id       String   @id @default(uuid())
+  userId   String
+  familyId String
+  role     String   @default("member")
+  joinedAt DateTime @default(now())
+  
+  user     users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  family   Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, familyId])
 }
 
