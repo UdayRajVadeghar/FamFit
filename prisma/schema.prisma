@@ -68,7 +68,7 @@ model Progress{
   workoutDuration Int
   caloriesBurnt     Int
   overallRating  String
-  createdAt   DateTime       @default(now())
+  createdAt   DateTime      
 }
 
 

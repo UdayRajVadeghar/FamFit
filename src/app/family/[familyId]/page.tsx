@@ -54,14 +54,69 @@ export default function FamilyPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [copySuccess, setCopySuccess] = useState(false);
+  const [todayProgressUpdated, setTodayProgressUpdated] = useState(false);
+  const [checkingProgress, setCheckingProgress] = useState(true);
 
   const familyId = params.familyId as string;
 
   useEffect(() => {
     if (familyId) {
       fetchFamily();
+      checkTodayProgress();
     }
   }, [familyId]);
+
+  const checkTodayProgress = async () => {
+    try {
+      setCheckingProgress(true);
+      const response = await fetch(
+        `/api/family/progress?familyId=${familyId}&limit=1`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        if (data.progress && data.progress.length > 0) {
+          const lastProgress = data.progress[0];
+
+          // Get current IST date
+          const istResponse = await fetch(
+            "https://timeapi.io/api/Time/current/zone?timeZone=Asia/Kolkata"
+          );
+          if (istResponse.ok) {
+            const istData = await istResponse.json();
+            const todayISTDateString = `${istData.year}-${String(
+              istData.month
+            ).padStart(2, "0")}-${String(istData.day).padStart(2, "0")}`;
+
+            // Convert last progress createdAt to IST and compare dates
+            const lastProgressIST = new Date(
+              lastProgress.createdAt.toLocaleString("en-US", {
+                timeZone: "Asia/Kolkata",
+              })
+            );
+            const lastProgressDateString = lastProgressIST
+              .toISOString()
+              .split("T")[0];
+
+            setTodayProgressUpdated(
+              lastProgressDateString === todayISTDateString
+            );
+          }
+        } else {
+          setTodayProgressUpdated(false);
+        }
+      }
+    } catch (error) {
+      console.error("Error checking today's progress:", error);
+      setTodayProgressUpdated(false);
+    } finally {
+      setCheckingProgress(false);
+    }
+  };
+
+  const handleProgressUpdate = () => {
+    // Refresh the progress status after successful update
+    checkTodayProgress();
+  };
 
   const fetchFamily = async () => {
     try {
@@ -236,20 +291,40 @@ export default function FamilyPage() {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <TrendingUp className="h-5 w-5 text-green-500" />
-                  <span className="text-sm font-medium text-green-600">
-                    Keep it up!
-                  </span>
+                  {checkingProgress ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      <span className="text-sm text-gray-600">Checking...</span>
+                    </div>
+                  ) : todayProgressUpdated ? (
+                    <>
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-sm font-medium text-green-600">
+                        Updated Today ✓
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <TrendingUp className="h-5 w-5 text-orange-500" />
+                      <span className="text-sm font-medium text-orange-600">
+                        Update Pending
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <WorkoutProgressModal
                   familyId={familyId}
+                  onSuccess={handleProgressUpdate}
+                  disabled={todayProgressUpdated}
                   trigger={
-                    <Button className="w-full">
+                    <Button className="w-full" disabled={todayProgressUpdated}>
                       <Activity className="mr-2 h-4 w-4" />
-                      Update Progress
+                      {todayProgressUpdated
+                        ? "Already Updated"
+                        : "Update Progress"}
                     </Button>
                   }
                 />
@@ -272,7 +347,13 @@ export default function FamilyPage() {
                 <p className="text-gray-600 mb-4">Begin your fitness routine</p>
                 <WorkoutProgressModal
                   familyId={familyId}
-                  trigger={<Button className="w-full">Get Started</Button>}
+                  onSuccess={handleProgressUpdate}
+                  disabled={todayProgressUpdated}
+                  trigger={
+                    <Button className="w-full" disabled={todayProgressUpdated}>
+                      {todayProgressUpdated ? "Already Updated" : "Get Started"}
+                    </Button>
+                  }
                 />
               </div>
 

@@ -27,6 +27,8 @@ import { useState } from "react";
 interface WorkoutProgressModalProps {
   trigger?: React.ReactNode;
   familyId: string;
+  onSuccess?: () => void;
+  disabled?: boolean;
 }
 
 interface WorkoutData {
@@ -37,6 +39,28 @@ interface WorkoutData {
   duration: string;
   rating: "good" | "bad" | "";
 }
+
+const timeOptions = [
+  { value: "05:00", label: "5:00 AM" },
+  { value: "06:00", label: "6:00 AM" },
+  { value: "07:00", label: "7:00 AM" },
+  { value: "08:00", label: "8:00 AM" },
+  { value: "09:00", label: "9:00 AM" },
+  { value: "10:00", label: "10:00 AM" },
+  { value: "11:00", label: "11:00 AM" },
+  { value: "12:00", label: "12:00 PM" },
+  { value: "13:00", label: "1:00 PM" },
+  { value: "14:00", label: "2:00 PM" },
+  { value: "15:00", label: "3:00 PM" },
+  { value: "16:00", label: "4:00 PM" },
+  { value: "17:00", label: "5:00 PM" },
+  { value: "18:00", label: "6:00 PM" },
+  { value: "19:00", label: "7:00 PM" },
+  { value: "20:00", label: "8:00 PM" },
+  { value: "21:00", label: "9:00 PM" },
+  { value: "22:00", label: "10:00 PM" },
+  { value: "23:00", label: "11:00 PM" },
+];
 
 const workoutTypes = [
   { value: "chest", label: "Chest", icon: "💪" },
@@ -54,11 +78,13 @@ const workoutTypes = [
 export default function WorkoutProgressModal({
   trigger,
   familyId,
+  onSuccess,
+  disabled = false,
 }: WorkoutProgressModalProps) {
   const [open, setOpen] = useState(false);
   const [workoutData, setWorkoutData] = useState<WorkoutData>({
     progress: "",
-    checkInTime: new Date().toTimeString().slice(0, 5), // Current time in HH:MM format
+    checkInTime: "08:00", // Default to 8:00 AM
     caloriesBurned: "",
     workoutType: "",
     duration: "",
@@ -106,13 +132,18 @@ export default function WorkoutProgressModal({
         // Reset form and close modal
         setWorkoutData({
           progress: "",
-          checkInTime: new Date().toTimeString().slice(0, 5),
+          checkInTime: "08:00", // Default to 8:00 AM
           caloriesBurned: "",
           workoutType: "",
           duration: "",
           rating: "",
         });
         setOpen(false);
+
+        // Call the success callback to refresh progress status
+        if (onSuccess) {
+          onSuccess();
+        }
       } else {
         setError(data.error || "Failed to save workout progress");
       }
@@ -136,10 +167,10 @@ export default function WorkoutProgressModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <Dialog open={open && !disabled} onOpenChange={setOpen}>
+      <DialogTrigger asChild disabled={disabled}>
         {trigger || (
-          <Button className="w-full">
+          <Button className="w-full" disabled={disabled}>
             <Activity className="mr-2 h-4 w-4" />
             Update Workout Progress
           </Button>
@@ -185,13 +216,19 @@ export default function WorkoutProgressModal({
                 <Clock className="h-4 w-4" />
                 Check-in Time
               </label>
-              <Input
-                type="time"
+              <select
                 value={workoutData.checkInTime}
                 onChange={(e) =>
                   handleInputChange("checkInTime", e.target.value)
                 }
-              />
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {timeOptions.map((time) => (
+                  <option key={time.value} value={time.value}>
+                    {time.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="space-y-2">

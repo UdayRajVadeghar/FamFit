@@ -13,9 +13,8 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { familyId } = params;
+    const { familyId } = await params;
 
-    // Get family details and check if user is a member
     const family = await prisma.family.findUnique({
       where: {
         id: familyId,
@@ -47,7 +46,6 @@ export async function GET(
       return NextResponse.json({ error: "Family not found" }, { status: 404 });
     }
 
-    // Check if user is a member of this family
     const userMembership = family.members.find(
       (member) => member.userId === userId
     );

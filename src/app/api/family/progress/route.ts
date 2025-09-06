@@ -44,6 +44,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
     const familyMember = await prisma.familyMember.findUnique({
       where: {
         userId_familyId: {
@@ -93,36 +94,100 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!checkInTime || !checkInTime.match(/^\d{2}:\d{2}$/)) {
+      return NextResponse.json(
+        { error: "Invalid check-in time format. Expected HH:MM" },
+        { status: 400 }
+      );
+    }
+
     const today = new Date();
     const [hours, minutes] = checkInTime.split(":").map(Number);
+
+    if (
+      isNaN(hours) ||
+      isNaN(minutes) ||
+      hours < 0 ||
+      hours > 23 ||
+      minutes < 0 ||
+      minutes > 59
+    ) {
+      return NextResponse.json(
+        { error: "Invalid time values in check-in time" },
+        { status: 400 }
+      );
+    }
+
     const checkInDateTime = new Date(today);
     checkInDateTime.setHours(hours, minutes, 0, 0);
+
+    const istResponse = await fetch(
+      "https://timeapi.io/api/Time/current/zone?timeZone=Asia/Kolkata"
+    );
+    if (!istResponse.ok) {
+      return NextResponse.json(
+        { error: "Failed to fetch current time" },
+        { status: 500 }
+      );
+    }
+
+    const istData = await istResponse.json();
+
+    const currentISTDate = new Date(
+      Date.UTC(
+        istData.year,
+        istData.month - 1,
+        istData.day,
+        istData.hour,
+        istData.minute,
+        istData.seconds,
+        istData.milliSeconds
+      )
+    );
+
+    const todayISTDateString = `${istData.year}-${String(
+      istData.month
+    ).padStart(2, "0")}-${String(istData.day).padStart(2, "0")}`;
+
+    console.log("IST API Response:", istData);
+    console.log("UTC stored Date:", currentISTDate.toISOString());
+    console.log("IST Date String:", todayISTDateString);
+
+    const lastProgress = await prisma.progress.findFirst({
+      where: {
+        userId: userId,
+        familyId: familyId,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    if (lastProgress) {
+      const lastProgressDateString = lastProgress.createdAt.toLocaleDateString(
+        "en-CA",
+        { timeZone: "Asia/Kolkata" }
+      );
+
+      if (lastProgressDateString === todayISTDateString) {
+        return NextResponse.json(
+          { error: "You have already updated today's progress." },
+          { status: 400 }
+        );
+      }
+    }
 
     const workoutProgress = await prisma.progress.create({
       data: {
         userId: userId,
         familyId: familyId,
-        progressDetails: progress,
+        progressDetails: progress.trim(),
         checkInTime: checkInDateTime,
-        workoutType: workoutType,
+        workoutType: workoutType.trim(),
         workoutDuration: durationInt,
         caloriesBurnt: caloriesInt,
-        overallRating: rating,
-      },
-      include: {
-        users: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        family: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+        overallRating: rating.trim(),
+        createdAt: currentISTDate,
       },
     });
 
