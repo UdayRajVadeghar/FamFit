@@ -1,5 +1,6 @@
 "use client";
 
+import ActivityGraph from "@/components/ActivityGraph";
 import { Button } from "@/components/ui/button";
 import WorkoutProgressModal from "@/components/WorkoutProgressModal";
 import { useUser } from "@clerk/nextjs";
@@ -274,6 +275,9 @@ export default function FamilyPage() {
               )}
             </div>
 
+            {/* Activity Graph */}
+            <ActivityGraph familyId={familyId} className="mb-6" />
+
             {/* Workout Progress Update */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
@@ -334,50 +338,12 @@ export default function FamilyPage() {
                 </Button>
               </div>
             </div>
-
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                  <span className="text-2xl">💪</span>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Start Workout
-                </h3>
-                <p className="text-gray-600 mb-4">Begin your fitness routine</p>
-                <WorkoutProgressModal
-                  familyId={familyId}
-                  onSuccess={handleProgressUpdate}
-                  disabled={todayProgressUpdated}
-                  trigger={
-                    <Button className="w-full" disabled={todayProgressUpdated}>
-                      {todayProgressUpdated ? "Already Updated" : "Get Started"}
-                    </Button>
-                  }
-                />
-              </div>
-
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                  <span className="text-2xl">📊</span>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Family Progress
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  View collective achievements
-                </p>
-                <Button variant="outline" className="w-full">
-                  View Progress
-                </Button>
-              </div>
-            </div>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Invite Code */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="bg-white rounded-xl shadow-sm p-6 ">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Invite Code
               </h3>
