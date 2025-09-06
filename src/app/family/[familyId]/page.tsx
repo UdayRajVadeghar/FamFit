@@ -1,14 +1,17 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import WorkoutProgressModal from "@/components/WorkoutProgressModal";
 import { useUser } from "@clerk/nextjs";
 import {
+  Activity,
   ArrowLeft,
   Calendar,
   Copy,
   Crown,
   Settings,
   Target,
+  TrendingUp,
   Users,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -216,17 +219,59 @@ export default function FamilyPage() {
               )}
             </div>
 
+            {/* Workout Progress Update */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Activity className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Today's Workout
+                    </h3>
+                    <p className="text-gray-600">
+                      Track your progress and share with family
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="h-5 w-5 text-green-500" />
+                  <span className="text-sm font-medium text-green-600">
+                    Keep it up!
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <WorkoutProgressModal
+                  trigger={
+                    <Button className="w-full">
+                      <Activity className="mr-2 h-4 w-4" />
+                      Update Progress
+                    </Button>
+                  }
+                />
+                <Button variant="outline" className="w-full">
+                  <Target className="mr-2 h-4 w-4" />
+                  View History
+                </Button>
+              </div>
+            </div>
+
             {/* Quick Actions */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-white rounded-xl shadow-sm p-6">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
                   <span className="text-2xl">💪</span>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   Start Workout
                 </h3>
                 <p className="text-gray-600 mb-4">Begin your fitness routine</p>
-                <Button className="w-full">Get Started</Button>
+                <WorkoutProgressModal
+                  trigger={<Button className="w-full">Get Started</Button>}
+                />
               </div>
 
               <div className="bg-white rounded-xl shadow-sm p-6">
