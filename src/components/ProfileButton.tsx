@@ -15,9 +15,9 @@ interface ProfileButtonProps {
   showWelcome?: boolean;
 }
 
-export default function ProfileButton({ 
-  className = "", 
-  showWelcome = false 
+export default function ProfileButton({
+  className = "",
+  showWelcome = false,
 }: ProfileButtonProps) {
   const { user } = useUser();
 
@@ -38,7 +38,7 @@ export default function ProfileButton({
           </SignUpButton>
         </div>
       </SignedOut>
-      
+
       <SignedIn>
         <div className="flex items-center space-x-3">
           {showWelcome && (
@@ -46,13 +46,13 @@ export default function ProfileButton({
               Hi, {user?.firstName || "User"}!
             </span>
           )}
-          <UserButton 
+          <UserButton
             appearance={{
               elements: {
                 avatarBox: "w-8 h-8",
                 userButtonPopoverCard: "shadow-lg border border-gray-200",
                 userButtonPopoverActions: "text-gray-700",
-              }
+              },
             }}
           />
         </div>
