@@ -164,7 +164,7 @@ export default function Dashboard() {
                   <Users className="text-gray-400" size={40} />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                  No Families Yet
+                  No Family Groups Yet
                 </h3>
                 <p className="text-gray-600 mb-10 text-lg max-w-md mx-auto leading-relaxed">
                   Create a new family or join an existing one to start your

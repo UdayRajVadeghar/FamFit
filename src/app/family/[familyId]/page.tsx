@@ -9,8 +9,11 @@ import {
   Activity,
   ArrowLeft,
   Calendar,
+  Clock,
   Copy,
   Crown,
+  Dumbbell,
+  Flame,
   Settings,
   Target,
   TrendingUp,
@@ -58,6 +61,10 @@ export default function FamilyPage() {
   const [copySuccess, setCopySuccess] = useState(false);
   const [todayProgressUpdated, setTodayProgressUpdated] = useState(false);
   const [checkingProgress, setCheckingProgress] = useState(true);
+  const [showHistory, setShowHistory] = useState(false);
+  const [progressHistory, setProgressHistory] = useState<any[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState("");
 
   const familyId = params.familyId as string;
 
@@ -136,6 +143,75 @@ export default function FamilyPage() {
   const handleProgressUpdate = () => {
     // Refresh the progress status after successful update
     checkTodayProgress();
+    // Refresh history if it's currently shown
+    if (showHistory) {
+      fetchProgressHistory();
+    }
+  };
+
+  const fetchProgressHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    setHistoryError("");
+
+    try {
+      const response = await fetch(
+        `/api/family/progress?familyId=${familyId}&limit=30`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setProgressHistory(data.progress || []);
+      } else {
+        const errorData = await response.json();
+        setHistoryError(errorData.error || "Failed to load progress history");
+      }
+    } catch {
+      setHistoryError("Network error. Please try again.");
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, [familyId]);
+
+  const toggleHistory = () => {
+    const newShowHistory = !showHistory;
+    setShowHistory(newShowHistory);
+
+    if (newShowHistory && progressHistory.length === 0) {
+      fetchProgressHistory();
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      weekday: "short",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const formatTime = (timeString: string) => {
+    const date = new Date(timeString);
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const getRatingColor = (rating: string) => {
+    switch (rating.toLowerCase()) {
+      case "excellent":
+        return "text-green-700 bg-green-50 border-green-200";
+      case "good":
+        return "text-blue-700 bg-blue-50 border-blue-200";
+      case "average":
+        return "text-yellow-700 bg-yellow-50 border-yellow-200";
+      case "poor":
+        return "text-red-700 bg-red-50 border-red-200";
+      default:
+        return "text-slate-700 bg-slate-50 border-slate-200";
+    }
   };
 
   const copyInviteCode = async () => {
@@ -257,7 +333,14 @@ export default function FamilyPage() {
                         Start Date
                       </label>
                       <p className="text-gray-600">
-                        {new Date(family.startDate).toLocaleDateString()}
+                        {new Date(family.startDate).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric",
+                          }
+                        )}
                       </p>
                     </div>
                   )}
@@ -269,7 +352,11 @@ export default function FamilyPage() {
                         End Date
                       </label>
                       <p className="text-gray-600">
-                        {new Date(family.endDate).toLocaleDateString()}
+                        {new Date(family.endDate).toLocaleDateString("en-US", {
+                          month: "long",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
                       </p>
                     </div>
                   )}
@@ -334,12 +421,182 @@ export default function FamilyPage() {
                     </Button>
                   }
                 />
-                <Button variant="outline" className="w-full">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={toggleHistory}
+                >
                   <Target className="mr-2 h-4 w-4" />
-                  View History
+                  {showHistory ? "Hide History" : "View History"}
                 </Button>
               </div>
             </div>
+
+            {/* Progress History Display */}
+            {showHistory && (
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4 border-b border-slate-200">
+                  <h3 className="text-lg font-semibold text-slate-900 flex items-center">
+                    <Target className="mr-2 h-5 w-5 text-blue-600" />
+                    Your Progress History
+                  </h3>
+                  <p className="text-sm text-slate-600 mt-1">
+                    Recent workout sessions and progress updates
+                  </p>
+                </div>
+
+                <div className="p-6">
+                  {historyLoading ? (
+                    <div className="text-center py-12">
+                      <div className="relative mx-auto w-12 h-12 mb-4">
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-600 to-emerald-600 animate-spin">
+                          <div className="absolute inset-1 rounded-full bg-white"></div>
+                        </div>
+                      </div>
+                      <p className="text-slate-600 font-medium">
+                        Loading your progress history...
+                      </p>
+                    </div>
+                  ) : historyError ? (
+                    <div className="text-center py-12">
+                      <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-lg">⚠️</span>
+                      </div>
+                      <p className="text-red-600 font-medium mb-4">
+                        {historyError}
+                      </p>
+                      <Button
+                        onClick={fetchProgressHistory}
+                        variant="outline"
+                        size="sm"
+                        className="border-red-200 text-red-600 hover:bg-red-50"
+                      >
+                        Try Again
+                      </Button>
+                    </div>
+                  ) : progressHistory.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <TrendingUp className="text-slate-400" size={24} />
+                      </div>
+                      <h4 className="text-lg font-semibold text-slate-900 mb-2">
+                        No Progress History Yet
+                      </h4>
+                      <p className="text-slate-600">
+                        Start logging your workouts to see your progress here.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {progressHistory.map((record, index) => (
+                        <div
+                          key={record.id}
+                          className="border border-slate-200 rounded-xl p-5 hover:shadow-md hover:border-blue-300 transition-all duration-200"
+                          style={{ animationDelay: `${index * 50}ms` }}
+                        >
+                          <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+                            {/* Date & Time */}
+                            <div className="flex items-center gap-3 lg:w-48">
+                              <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <Calendar className="text-blue-600" size={16} />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-semibold text-slate-900 text-sm truncate">
+                                  {formatDate(record.createdAt)}
+                                </p>
+                                <p className="text-slate-500 text-xs flex items-center gap-1">
+                                  <Clock size={10} />
+                                  {formatTime(record.checkInTime)}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Workout Details */}
+                            <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div className="flex items-center gap-2">
+                                <Dumbbell
+                                  className="text-blue-600 flex-shrink-0"
+                                  size={14}
+                                />
+                                <div className="min-w-0">
+                                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+                                    Type
+                                  </p>
+                                  <p className="font-semibold text-slate-900 text-sm truncate">
+                                    {record.workoutType}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <Clock
+                                  className="text-emerald-600 flex-shrink-0"
+                                  size={14}
+                                />
+                                <div className="min-w-0">
+                                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+                                    Duration
+                                  </p>
+                                  <p className="font-semibold text-slate-900 text-sm">
+                                    {record.workoutDuration} min
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <Flame
+                                  className="text-orange-600 flex-shrink-0"
+                                  size={14}
+                                />
+                                <div className="min-w-0">
+                                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+                                    Calories
+                                  </p>
+                                  <p className="font-semibold text-slate-900 text-sm">
+                                    {record.caloriesBurnt}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Rating */}
+                            <div className="lg:w-20">
+                              <div
+                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border ${getRatingColor(
+                                  record.overallRating
+                                )} text-center`}
+                              >
+                                {record.overallRating}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Progress Details */}
+                          {record.progressDetails && (
+                            <div className="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
+                                Progress Notes
+                              </p>
+                              <p className="text-slate-700 text-sm leading-relaxed">
+                                {record.progressDetails}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+
+                      {progressHistory.length >= 30 && (
+                        <div className="text-center pt-4">
+                          <p className="text-sm text-slate-500">
+                            Showing last 30 workout sessions
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -348,10 +605,10 @@ export default function FamilyPage() {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <Button
                 onClick={() => router.push(`/family/${familyId}/status`)}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                className="w-full bg-blue-600 hover:blue-500"
               >
                 <TrendingUp size={16} className="mr-2" />
-                View Family Status
+                View Family Group Status
               </Button>
             </div>
 
@@ -405,7 +662,14 @@ export default function FamilyPage() {
                         </p>
                         <p className="text-xs text-gray-500">
                           Joined{" "}
-                          {new Date(member.joinedAt).toLocaleDateString()}
+                          {new Date(member.joinedAt).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "long",
+                              day: "numeric",
+                              year: "numeric",
+                            }
+                          )}
                         </p>
                       </div>
                     </div>

@@ -8,6 +8,7 @@ import {
   ArrowLeft,
   Calendar,
   Clock,
+  Dumbbell,
   Flame,
   RefreshCw,
   Users,
@@ -213,7 +214,7 @@ export default function FamilyStatusPage() {
               </button>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                  {statusData.familyName} - Family Status
+                  {statusData.familyName} - Family Group Status
                 </h1>
                 <p className="text-gray-600">
                   {
@@ -339,15 +340,37 @@ export default function FamilyStatusPage() {
               <Calendar className="h-5 w-5 text-gray-400" />
               <span className="text-sm text-gray-600">
                 Progress Period:{" "}
-                {new Date(statusData.dateRange.start).toLocaleDateString()} -{" "}
-                {new Date(statusData.dateRange.end).toLocaleDateString()}
+                {new Date(statusData.dateRange.start).toLocaleDateString(
+                  "en-US",
+                  {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  }
+                )}{" "}
+                -{" "}
+                {new Date(statusData.dateRange.end).toLocaleDateString(
+                  "en-US",
+                  {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  }
+                )}
               </span>
             </div>
             <div className="flex items-center space-x-4">
               {statusData.familyCreatedAt && (
                 <span className="text-xs text-gray-500">
-                  Family created:{" "}
-                  {new Date(statusData.familyCreatedAt).toLocaleDateString()}
+                  Family Group created:{" "}
+                  {new Date(statusData.familyCreatedAt).toLocaleDateString(
+                    "en-US",
+                    {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    }
+                  )}
                 </span>
               )}
               <span className="text-sm text-gray-500">
@@ -363,7 +386,7 @@ export default function FamilyStatusPage() {
         {/* Member Progress Cards */}
         <div className="space-y-6">
           <h2 className="text-xl font-bold text-gray-900 flex items-center">
-            <Users className="mr-2" />
+            <Dumbbell className="mr-2" />
             Member Progress
           </h2>
 
@@ -454,7 +477,14 @@ export default function FamilyStatusPage() {
                       </span>
                       <span className="text-sm font-medium text-gray-900">
                         {member.lastWorkout
-                          ? new Date(member.lastWorkout).toLocaleDateString()
+                          ? new Date(member.lastWorkout).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "long",
+                                day: "numeric",
+                                year: "numeric",
+                              }
+                            )
                           : "No workouts yet"}
                       </span>
                     </div>
