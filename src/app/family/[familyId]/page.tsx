@@ -33,6 +33,22 @@ interface FamilyMember {
   };
 }
 
+interface ProgressEntry {
+  id: string;
+  workoutType: string;
+  workoutDuration: number;
+  caloriesBurnt: number;
+  overallRating: string;
+  createdAt: string;
+  checkInTime: string;
+  progressDetails?: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
 interface FamilyData {
   id: string;
   name: string;
@@ -62,7 +78,7 @@ export default function FamilyPage() {
   const [todayProgressUpdated, setTodayProgressUpdated] = useState(false);
   const [checkingProgress, setCheckingProgress] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
-  const [progressHistory, setProgressHistory] = useState<any[]>([]);
+  const [progressHistory, setProgressHistory] = useState<ProgressEntry[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
 
