@@ -15,11 +15,12 @@ function getCurrentISTTime() {
     hour: istTime.getUTCHours(),
     minute: istTime.getUTCMinutes(),
     seconds: istTime.getUTCSeconds(),
-    milliSeconds: istTime.getUTCMilliseconds()
+    milliSeconds: istTime.getUTCMilliseconds(),
   };
 }
 
 export async function GET(request: NextRequest) {
+  const startTime = Date.now();
   try {
     const { userId } = await auth();
 
@@ -33,6 +34,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const familyId = searchParams.get("familyId");
     const period = searchParams.get("period") || "30d";
+    const debug = searchParams.get("debug") === "true";
 
     if (!familyId) {
       return NextResponse.json(
@@ -41,7 +43,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log("Fetching family status for:", { familyId, period, userId });
+    console.log("Fetching family status for:", {
+      familyId,
+      period,
+      userId,
+      debug,
+    });
 
     const familyMember = await prisma.familyMember.findUnique({
       where: {
@@ -81,24 +88,29 @@ export async function GET(request: NextRequest) {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-      
+
       const istResponse = await fetch(
         "https://timeapi.io/api/Time/current/zone?timeZone=Asia/Kolkata",
-        { 
-          signal: controller.signal
+        {
+          signal: controller.signal,
         }
       );
-      
+
       clearTimeout(timeoutId);
-      
+
       if (istResponse.ok) {
         istData = await istResponse.json();
         console.log("IST API Response:", istData);
       } else {
-        throw new Error(`IST API request failed with status: ${istResponse.status}`);
+        throw new Error(
+          `IST API request failed with status: ${istResponse.status}`
+        );
       }
     } catch (error) {
-      console.warn("Failed to fetch IST time from external API, using fallback:", error);
+      console.warn(
+        "Failed to fetch IST time from external API, using fallback:",
+        error
+      );
       istData = getCurrentISTTime();
     }
 
@@ -206,127 +218,138 @@ export async function GET(request: NextRequest) {
     });
 
     console.log("Found progress records:", progressRecords.length);
-    const membersProgress = familyMembers.map((member) => {
-      if (!member.user) {
-        console.error("Member missing user data:", member);
-        return null;
-      }
+    const membersProgress = familyMembers
+      .map((member) => {
+        if (!member.user) {
+          console.error("Member missing user data:", member);
+          return null;
+        }
 
-      const memberProgress = progressRecords.filter(
-        (record) => record.userId === member.user.id
-      );
+        const memberProgress = progressRecords.filter(
+          (record) => record.userId === member.user.id
+        );
 
-      const totalWorkouts = memberProgress.length;
-      const totalCalories = memberProgress.reduce(
-        (sum, record) => sum + (record.caloriesBurnt || 0),
-        0
-      );
-      const totalDuration = memberProgress.reduce(
-        (sum, record) => sum + (record.workoutDuration || 0),
-        0
-      );
+        const totalWorkouts = memberProgress.length;
+        const totalCalories = memberProgress.reduce(
+          (sum, record) => sum + (record.caloriesBurnt || 0),
+          0
+        );
+        const totalDuration = memberProgress.reduce(
+          (sum, record) => sum + (record.workoutDuration || 0),
+          0
+        );
 
-      let avgRating = 0;
-      if (totalWorkouts > 0) {
-        const ratingSum = memberProgress.reduce((sum, record) => {
-          if (!record.overallRating) return sum + 3; // Default rating
-          
-          const numericRating = parseFloat(record.overallRating);
-          if (!isNaN(numericRating)) {
-            return sum + Math.max(0, Math.min(5, numericRating)); // Clamp between 0-5
-          }
-          
-          const lowerRating = record.overallRating.toLowerCase();
-          if (
-            lowerRating.includes("excellent") ||
-            lowerRating.includes("amazing")
-          )
-            return sum + 5;
-          if (lowerRating.includes("great") || lowerRating.includes("good"))
-            return sum + 4;
-          if (lowerRating.includes("okay") || lowerRating.includes("average"))
-            return sum + 3;
-          if (lowerRating.includes("poor") || lowerRating.includes("bad"))
-            return sum + 2;
-          return sum + 3; // Default to 3 for unknown ratings
-        }, 0);
-        avgRating = ratingSum / totalWorkouts;
-      }
+        let avgRating = 0;
+        if (totalWorkouts > 0) {
+          const ratingSum = memberProgress.reduce((sum, record) => {
+            if (!record.overallRating) return sum + 3; // Default rating
 
-      let currentStreak = 0;
-      if (memberProgress.length > 0) {
-        try {
-          const sortedProgress = [...memberProgress].sort(
-            (a, b) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
+            const numericRating = parseFloat(record.overallRating);
+            if (!isNaN(numericRating)) {
+              return sum + Math.max(0, Math.min(5, numericRating)); // Clamp between 0-5
+            }
 
-          const workoutDates = new Set(
-            sortedProgress.map((record) => {
+            const lowerRating = record.overallRating.toLowerCase();
+            if (
+              lowerRating.includes("excellent") ||
+              lowerRating.includes("amazing")
+            )
+              return sum + 5;
+            if (lowerRating.includes("great") || lowerRating.includes("good"))
+              return sum + 4;
+            if (lowerRating.includes("okay") || lowerRating.includes("average"))
+              return sum + 3;
+            if (lowerRating.includes("poor") || lowerRating.includes("bad"))
+              return sum + 2;
+            return sum + 3; // Default to 3 for unknown ratings
+          }, 0);
+          avgRating = ratingSum / totalWorkouts;
+        }
+
+        let currentStreak = 0;
+        if (memberProgress.length > 0) {
+          try {
+            const sortedProgress = [...memberProgress].sort(
+              (a, b) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
+            );
+
+            const workoutDates = new Set(
+              sortedProgress.map((record) => {
+                try {
+                  return record.createdAt.toLocaleDateString("en-CA", {
+                    timeZone: "Asia/Kolkata",
+                  });
+                } catch (error) {
+                  console.error(
+                    "Error formatting date:",
+                    error,
+                    record.createdAt
+                  );
+                  return record.createdAt.toISOString().split("T")[0]; // Fallback
+                }
+              })
+            );
+
+            const today = new Date();
+            const checkDate = new Date(today);
+
+            while (true) {
+              let dateString;
               try {
-                return record.createdAt.toLocaleDateString("en-CA", {
+                dateString = checkDate.toLocaleDateString("en-CA", {
                   timeZone: "Asia/Kolkata",
                 });
               } catch (error) {
-                console.error("Error formatting date:", error, record.createdAt);
-                return record.createdAt.toISOString().split('T')[0]; // Fallback
+                console.error("Error formatting check date:", error);
+                dateString = checkDate.toISOString().split("T")[0]; // Fallback
               }
-            })
-          );
 
-          const today = new Date();
-          const checkDate = new Date(today);
-
-          while (true) {
-            let dateString;
-            try {
-              dateString = checkDate.toLocaleDateString("en-CA", {
-                timeZone: "Asia/Kolkata",
-              });
-            } catch (error) {
-              console.error("Error formatting check date:", error);
-              dateString = checkDate.toISOString().split('T')[0]; // Fallback
+              if (workoutDates.has(dateString)) {
+                currentStreak++;
+                checkDate.setDate(checkDate.getDate() - 1);
+              } else {
+                break;
+              }
             }
-
-            if (workoutDates.has(dateString)) {
-              currentStreak++;
-              checkDate.setDate(checkDate.getDate() - 1);
-            } else {
-              break;
-            }
+          } catch (error) {
+            console.error(
+              "Error calculating streak for member:",
+              member.user.id,
+              error
+            );
+            currentStreak = 0;
           }
-        } catch (error) {
-          console.error("Error calculating streak for member:", member.user.id, error);
-          currentStreak = 0;
         }
-      }
 
-      const lastWorkout =
-        memberProgress.length > 0
-          ? memberProgress[0].createdAt.toISOString()
-          : null;
+        const lastWorkout =
+          memberProgress.length > 0
+            ? memberProgress[0].createdAt.toISOString()
+            : null;
 
-      return {
-        userId: member.user.id,
-        userName: member.user.name || null,
-        userEmail: member.user.email,
-        role: member.role,
-        totalWorkouts,
-        totalCalories,
-        totalDuration,
-        avgRating,
-        currentStreak,
-        lastWorkout,
-        progressEntries: memberProgress.map((record) => ({
-          id: record.id,
-          workoutType: record.workoutType || "Unknown",
-          workoutDuration: record.workoutDuration || 0,
-          caloriesBurnt: record.caloriesBurnt || 0,
-          overallRating: record.overallRating || "N/A",
-          createdAt: record.createdAt.toISOString(),
-        })),
-      };
-    }).filter(Boolean); // Remove any null entries
+        return {
+          userId: member.user.id,
+          userName: member.user.name || null,
+          userEmail: member.user.email,
+          role: member.role,
+          totalWorkouts,
+          totalCalories,
+          totalDuration,
+          avgRating,
+          currentStreak,
+          lastWorkout,
+          progressEntries: memberProgress.map((record) => ({
+            id: record.id,
+            workoutType: record.workoutType || "Unknown",
+            workoutDuration: record.workoutDuration || 0,
+            caloriesBurnt: record.caloriesBurnt || 0,
+            overallRating: record.overallRating || "N/A",
+            createdAt: record.createdAt.toISOString(),
+          })),
+        };
+      })
+      .filter(Boolean); // Remove any null entries
 
     const familyStats = {
       totalWorkouts: progressRecords.length,
@@ -358,11 +381,43 @@ export async function GET(request: NextRequest) {
     };
 
     console.log("Returning response data for family:", familyId);
+
+    if (debug) {
+      return NextResponse.json({
+        ...responseData,
+        debug: {
+          processingTime: Date.now() - startTime,
+          familyMembersCount: familyMembers.length,
+          progressRecordsCount: progressRecords.length,
+          dateRange: {
+            start: startDate.toISOString(),
+            end: endDate.toISOString(),
+          },
+          istDataSource: istData ? "External API" : "Local calculation",
+        },
+      });
+    }
+
     return NextResponse.json(responseData);
   } catch (error) {
     console.error("Error fetching family status:", error);
+    console.error(
+      "Error stack:",
+      error instanceof Error ? error.stack : "No stack trace"
+    );
+    console.error("Request details:", {
+      url: request.url,
+      method: request.method,
+      headers: Object.fromEntries(request.headers.entries()),
+    });
+
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        message:
+          error instanceof Error ? error.message : "Unknown error occurred",
+        timestamp: new Date().toISOString(),
+      },
       { status: 500 }
     );
   }
