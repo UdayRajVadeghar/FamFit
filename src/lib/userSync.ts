@@ -24,11 +24,16 @@ export function useUserSync() {
             : null,
         };
 
-        const { data: _data, error } = await (supabase as unknown as {
-          from: (table: string) => {
-            upsert: (data: unknown, options: { onConflict: string }) => Promise<{ data?: unknown; error?: { message: string } }>
+        const { data: _data, error } = await (
+          supabase as unknown as {
+            from: (table: string) => {
+              upsert: (
+                data: unknown,
+                options: { onConflict: string }
+              ) => Promise<{ data?: unknown; error?: { message: string } }>;
+            };
           }
-        })
+        )
           .from("users")
           .upsert(userRecord, {
             onConflict: "id",
@@ -50,16 +55,22 @@ export function useUserSync() {
   return { user };
 }
 
-export async function syncUserToSupabase(user: {
-  id: string;
-  emailAddresses: Array<{ emailAddress: string }>;
-  firstName?: string | null;
-  lastName?: string | null;
-}, supabase: {
-  from: (table: string) => {
-    upsert: (data: unknown, options: { onConflict: string }) => Promise<{ data?: unknown; error?: unknown }>
+export async function syncUserToSupabase(
+  user: {
+    id: string;
+    emailAddresses: Array<{ emailAddress: string }>;
+    firstName?: string | null;
+    lastName?: string | null;
+  },
+  supabase: {
+    from: (table: string) => {
+      upsert: (
+        data: unknown,
+        options: { onConflict: string }
+      ) => Promise<{ data?: unknown; error?: unknown }>;
+    };
   }
-}) {
+) {
   if (!user) return null;
 
   try {
@@ -71,11 +82,16 @@ export async function syncUserToSupabase(user: {
         : null,
     };
 
-    const { data, error } = await (supabase as unknown as {
-      from: (table: string) => {
-        upsert: (data: unknown, options: { onConflict: string }) => Promise<{ data?: unknown; error?: unknown }>
+    const { data, error } = await (
+      supabase as unknown as {
+        from: (table: string) => {
+          upsert: (
+            data: unknown,
+            options: { onConflict: string }
+          ) => Promise<{ data?: unknown; error?: unknown }>;
+        };
       }
-    })
+    )
       .from("users")
       .upsert(userRecord, {
         onConflict: "id",
