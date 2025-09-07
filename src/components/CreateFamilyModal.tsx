@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -101,6 +102,9 @@ export function CreateFamilyModal({ isOpen, onClose }: CreateFamilyModalProps) {
       <DialogContent className="bg-white sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Create New Family</DialogTitle>
+          <DialogDescription>
+            Start your family&apos;s fitness journey together by creating a new family group.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {errors.general && (

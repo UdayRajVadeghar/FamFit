@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -68,14 +69,11 @@ export function JoinFamilyModal({ isOpen, onClose }: JoinFamilyModalProps) {
       <DialogContent className="bg-white sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Join Family</DialogTitle>
+          <DialogDescription>
+            Enter the invite code shared by your family admin to join their fitness journey.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="text-center mb-6">
-            <p className="text-gray-600">
-              Enter the invite code shared by your family admin to join their
-              fitness journey.
-            </p>
-          </div>
 
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">

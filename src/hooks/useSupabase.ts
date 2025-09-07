@@ -1,5 +1,6 @@
 "use client";
 
+import { supabase } from "@/lib/supabase";
 import type { Database } from "@/lib/supabase";
 import { useAuth, useSession } from "@clerk/nextjs";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
@@ -11,44 +12,43 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 export function useSupabase() {
   const { getToken } = useAuth();
   const { isLoaded } = useSession();
-  const [supabase, setSupabase] = useState<SupabaseClient<Database> | null>(
-    null
-  );
+  const [authenticatedClient, setAuthenticatedClient] = useState<SupabaseClient<Database> | null>(null);
 
   useEffect(() => {
-    const createSupabaseClient = async () => {
-      let accessToken: string | null = null;
+    const createAuthenticatedClient = async () => {
+      if (!isLoaded) return;
 
-      if (isLoaded) {
-        try {
-          accessToken = await getToken({ template: "supabase" });
-        } catch (error) {
-          console.log("No token available:", error);
-        }
+      let accessToken: string | null = null;
+      try {
+        accessToken = await getToken({ template: "supabase" });
+      } catch (error) {
+        console.log("No token available:", error);
+        // Return the singleton instance for unauthenticated usage
+        setAuthenticatedClient(null);
+        return;
       }
 
-      const client = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-        global: {
-          headers: accessToken
-            ? {
-                Authorization: `Bearer ${accessToken}`,
-              }
-            : {},
-        },
-        auth: {
-          persistSession: false,
-        },
-      });
-
-      setSupabase(client);
+      if (accessToken) {
+        // Create an authenticated client only when needed
+        const client = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+          global: {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+          auth: {
+            persistSession: false,
+          },
+        });
+        setAuthenticatedClient(client);
+      } else {
+        setAuthenticatedClient(null);
+      }
     };
 
-    createSupabaseClient();
+    createAuthenticatedClient();
   }, [getToken, isLoaded]);
 
-  if (!supabase) {
-    return createClient<Database>(supabaseUrl, supabaseAnonKey);
-  }
-
-  return supabase;
+  // Return authenticated client if available, otherwise return singleton
+  return authenticatedClient || supabase;
 }
