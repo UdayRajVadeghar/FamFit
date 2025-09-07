@@ -77,7 +77,7 @@ export function CreateFamilyModal({ isOpen, onClose }: CreateFamilyModalProps) {
       } else {
         setErrors({ general: data.error || "Failed to create family" });
       }
-    } catch (error) {
+    } catch {
       setErrors({ general: "Network error. Please try again." });
     } finally {
       setLoading(false);

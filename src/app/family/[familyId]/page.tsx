@@ -17,7 +17,7 @@ import {
   Users,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface FamilyMember {
   id: string;
@@ -61,14 +61,25 @@ export default function FamilyPage() {
 
   const familyId = params.familyId as string;
 
-  useEffect(() => {
-    if (familyId) {
-      fetchFamily();
-      checkTodayProgress();
+  const fetchFamily = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/family/${familyId}`);
+
+      if (response.ok) {
+        const data = await response.json();
+        setFamily(data.family);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || "Failed to load family");
+      }
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }, [familyId]);
 
-  const checkTodayProgress = async () => {
+  const checkTodayProgress = useCallback(async () => {
     try {
       setCheckingProgress(true);
       const response = await fetch(
@@ -113,29 +124,18 @@ export default function FamilyPage() {
     } finally {
       setCheckingProgress(false);
     }
-  };
+  }, [familyId]);
+
+  useEffect(() => {
+    if (familyId) {
+      fetchFamily();
+      checkTodayProgress();
+    }
+  }, [familyId, fetchFamily, checkTodayProgress]);
 
   const handleProgressUpdate = () => {
     // Refresh the progress status after successful update
     checkTodayProgress();
-  };
-
-  const fetchFamily = async () => {
-    try {
-      const response = await fetch(`/api/family/${familyId}`);
-
-      if (response.ok) {
-        const data = await response.json();
-        setFamily(data.family);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.error || "Failed to load family");
-      }
-    } catch (error) {
-      setError("Network error. Please try again.");
-    } finally {
-      setLoading(false);
-    }
   };
 
   const copyInviteCode = async () => {
@@ -289,7 +289,7 @@ export default function FamilyPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">
-                      Today's Workout
+                      Today&apos;s Workout
                     </h3>
                     <p className="text-gray-600">
                       Track your progress and share with family

@@ -236,37 +236,6 @@ export default function ActivityGraph({
     weeks.push(currentWeek);
   }
 
-  // Generate month labels with proper positioning
-  const generateMonthLabels = () => {
-    const labels: { label: string; weekIndex: number }[] = [];
-    const startDate = new Date(firstDayStr);
-
-    // Track which months we've seen
-    let currentMonth = startDate.getMonth();
-    let currentYear = startDate.getFullYear();
-
-    weeks.forEach((week, weekIndex) => {
-      const firstDayOfWeek = week.find((day) => day !== null);
-      if (firstDayOfWeek) {
-        const [y, m] = firstDayOfWeek.split("-").map(Number);
-        const monthNum = m - 1; // Convert to 0-based
-
-        if (monthNum !== currentMonth || y !== currentYear) {
-          const date = new Date(y, monthNum, 1);
-          labels.push({
-            label: date.toLocaleDateString("en-US", { month: "short" }),
-            weekIndex,
-          });
-          currentMonth = monthNum;
-          currentYear = y;
-        }
-      }
-    });
-
-    return labels;
-  };
-
-  const monthLabels = generateMonthLabels();
   const workoutsCount = workoutData.filter((day) => day.hasWorkout).length;
 
   return (

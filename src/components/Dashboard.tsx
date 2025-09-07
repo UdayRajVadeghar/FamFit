@@ -96,7 +96,7 @@ export default function Dashboard() {
                   Your Family Groups
                 </h2>
                 <p className="text-gray-600">
-                  Manage and track your family's fitness journey together
+                  Manage and track your family&apos;s fitness journey together
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">

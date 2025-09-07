@@ -50,7 +50,7 @@ export function JoinFamilyModal({ isOpen, onClose }: JoinFamilyModalProps) {
       } else {
         setError(data.error || "Failed to join family");
       }
-    } catch (error) {
+    } catch {
       setError("Network error. Please try again.");
     } finally {
       setLoading(false);

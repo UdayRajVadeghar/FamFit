@@ -13,7 +13,7 @@ import {
   Users,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface ProgressEntry {
   id: string;
@@ -85,13 +85,7 @@ export default function FamilyStatusPage() {
     { value: "all", label: "All Time", description: "Since family creation" },
   ];
 
-  useEffect(() => {
-    if (familyId) {
-      fetchFamilyStatus();
-    }
-  }, [familyId, selectedPeriod]);
-
-  const fetchFamilyStatus = async () => {
+  const fetchFamilyStatus = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(
@@ -106,12 +100,18 @@ export default function FamilyStatusPage() {
         const errorData = await response.json();
         setError(errorData.error || "Failed to load family status");
       }
-    } catch (error) {
+    } catch {
       setError("Network error. Please try again.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [familyId, selectedPeriod]);
+
+  useEffect(() => {
+    if (familyId) {
+      fetchFamilyStatus();
+    }
+  }, [familyId, fetchFamilyStatus]);
 
   const handleRefresh = async () => {
     setRefreshing(true);

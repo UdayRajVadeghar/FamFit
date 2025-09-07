@@ -207,7 +207,7 @@ export async function GET(request: NextRequest) {
         );
 
         const today = new Date();
-        let checkDate = new Date(today);
+        const checkDate = new Date(today);
 
         while (true) {
           const dateString = checkDate.toLocaleDateString("en-CA", {

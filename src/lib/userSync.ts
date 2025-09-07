@@ -24,11 +24,17 @@ export function useUserSync() {
             : null,
         };
 
-        const { data, error } = await (supabase as any)
+        const { data: _data, error } = await (supabase as unknown as {
+          from: (table: string) => {
+            upsert: (data: unknown, options: { onConflict: string }) => Promise<{ data?: unknown; error?: { message: string } }>
+          }
+        })
           .from("users")
           .upsert(userRecord, {
             onConflict: "id",
           });
+
+        void _data; // Mark as intentionally unused
 
         if (error) {
           console.error("User sync failed:", error.message || "Unknown error");
@@ -44,7 +50,16 @@ export function useUserSync() {
   return { user };
 }
 
-export async function syncUserToSupabase(user: any, supabase: any) {
+export async function syncUserToSupabase(user: {
+  id: string;
+  emailAddresses: Array<{ emailAddress: string }>;
+  firstName?: string | null;
+  lastName?: string | null;
+}, supabase: {
+  from: (table: string) => {
+    upsert: (data: unknown, options: { onConflict: string }) => Promise<{ data?: unknown; error?: unknown }>
+  }
+}) {
   if (!user) return null;
 
   try {
@@ -56,7 +71,11 @@ export async function syncUserToSupabase(user: any, supabase: any) {
         : null,
     };
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await (supabase as unknown as {
+      from: (table: string) => {
+        upsert: (data: unknown, options: { onConflict: string }) => Promise<{ data?: unknown; error?: unknown }>
+      }
+    })
       .from("users")
       .upsert(userRecord, {
         onConflict: "id",

@@ -176,7 +176,18 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-function calculateStreaks(activityData: any[]): {
+interface ActivityDataItem {
+  date: string;
+  hasWorkout: boolean;
+  workoutDetails?: {
+    workoutType: string;
+    caloriesBurnt: number;
+    workoutDuration: number;
+    overallRating: string;
+  };
+}
+
+function calculateStreaks(activityData: ActivityDataItem[]): {
   currentStreak: number;
   longestStreak: number;
 } {

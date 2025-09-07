@@ -49,7 +49,7 @@ export default function HomePage() {
                   </div>
 
                   <p className="text-lg sm:text-xl text-gray-600 mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
-                    Transform your family's fitness journey with seamless
+                    Transform your family&apos;s fitness journey with seamless
                     workout tracking, goal management, and motivation tools
                     designed for families who thrive together.
                   </p>

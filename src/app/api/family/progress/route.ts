@@ -224,7 +224,10 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "10");
     const page = parseInt(searchParams.get("page") || "1");
 
-    let whereClause: any = { userId: userId };
+    const whereClause: {
+      userId: string;
+      familyId?: string;
+    } = { userId: userId };
 
     if (familyId) {
       const familyMember = await prisma.familyMember.findUnique({

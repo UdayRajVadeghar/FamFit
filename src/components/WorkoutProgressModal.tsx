@@ -180,7 +180,7 @@ export default function WorkoutProgressModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Target className="h-5 w-5 text-blue-600" />
-            Today's Workout Progress
+            Today&apos;s Workout Progress
           </DialogTitle>
           <DialogDescription>
             Track your fitness journey and share your progress with family.
@@ -195,11 +195,11 @@ export default function WorkoutProgressModal({
             </div>
           )}
 
-          {/* Today's Progress */}
+          {/* Today Progress */}
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
               <Activity className="h-4 w-4" />
-              Today's Progress
+              Today&apos;s Progress
             </label>
             <Textarea
               placeholder="Describe your workout achievements, how you felt, or any milestones reached..."
