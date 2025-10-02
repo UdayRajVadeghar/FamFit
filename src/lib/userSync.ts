@@ -1,67 +1,43 @@
 "use client";
 
-import { useSupabase } from "@/hooks/useSupabase";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export function useUserSync() {
   const { user, isLoaded: userLoaded } = useUser();
   const { isLoaded: authLoaded } = useAuth();
-  const supabase = useSupabase();
+  const [synced, setSynced] = useState(false);
 
   useEffect(() => {
-    if (!userLoaded || !authLoaded || !user) return;
+    if (!userLoaded || !authLoaded || !user || synced) return;
 
     const syncUser = async () => {
       try {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Use server-side API endpoint for user sync
+        // This avoids RLS issues by using Prisma with service-level access
+        const response = await fetch("/api/user/sync", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
-        const userRecord = {
-          id: user.id,
-          email: user.emailAddresses[0]?.emailAddress || "",
-          name: user.firstName
-            ? `${user.firstName} ${user.lastName || ""}`.trim()
-            : null,
-        };
-
-        const { data: _data, error } = await (
-          supabase as unknown as {
-            from: (table: string) => {
-              upsert: (
-                data: unknown,
-                options: { onConflict: string }
-              ) => Promise<{
-                data?: unknown;
-                error?: { message: string; code?: string };
-              }>;
-            };
-          }
-        )
-          .from("users")
-          .upsert(userRecord, {
-            onConflict: "id",
-          });
-
-        void _data; // Mark as intentionally unused
-
-        if (error) {
-          console.error("User sync failed:", error);
-          if (error.message?.includes("409") || error.code === "409") {
-            console.error(
-              "This is likely due to missing Clerk JWT template or Supabase RLS policies"
-            );
-            console.error(
-              "See: https://clerk.com/docs/integrations/databases/supabase"
-            );
-          }
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("User sync failed:", errorData);
+          return;
         }
+
+        const data = await response.json();
+        console.log("User synced successfully:", data.user);
+        setSynced(true);
       } catch (error) {
         console.error("Failed to sync user:", error);
       }
     };
 
     syncUser();
-  }, [user, userLoaded, authLoaded, supabase]);
+  }, [user, userLoaded, authLoaded, synced]);
 
   return { user };
 }
