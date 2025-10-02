@@ -1,3 +1,4 @@
+import { executeWithRetry } from "@/lib/db-utils";
 import { prisma } from "@/lib/prisma";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
@@ -16,37 +17,44 @@ export async function POST() {
       ? `${user.firstName} ${user.lastName || ""}`.trim()
       : null;
 
-    // Check if user exists by ID
-    const existingUser = await prisma.users.findUnique({
-      where: { id: userId },
-    });
+    // Check if user exists by ID - with retry logic
+    const existingUser = await executeWithRetry(
+      (db) => db.users.findUnique({ where: { id: userId } }),
+      prisma
+    );
 
     let userRecord;
 
     if (existingUser) {
       // User exists, just update
-      userRecord = await prisma.users.update({
-        where: { id: userId },
-        data: {
-          email,
-          name,
-          updatedAt: new Date(),
-        },
-      });
+      userRecord = await executeWithRetry(
+        (db) =>
+          db.users.update({
+            where: { id: userId },
+            data: {
+              email,
+              name,
+              updatedAt: new Date(),
+            },
+          }),
+        prisma
+      );
     } else {
       // Check if email is already taken by another user
-      const emailExists = await prisma.users.findUnique({
-        where: { email },
-      });
+      const emailExists = await executeWithRetry(
+        (db) => db.users.findUnique({ where: { email } }),
+        prisma
+      );
 
       if (emailExists) {
         // Email exists with different ID - this is a conflict
         // This can happen when switching from dev to prod Clerk
 
         // Check if the old user has any related data
-        const hasData = await prisma.familyMember.count({
-          where: { userId: emailExists.id },
-        });
+        const hasData = await executeWithRetry(
+          (db) => db.familyMember.count({ where: { userId: emailExists.id } }),
+          prisma
+        );
 
         if (hasData > 0) {
           // User has data - don't delete, return error
@@ -63,26 +71,35 @@ export async function POST() {
         }
 
         // Safe to delete old record and create new one
-        await prisma.users.delete({
-          where: { email },
-        });
+        await executeWithRetry(
+          (db) => db.users.delete({ where: { email } }),
+          prisma
+        );
 
-        userRecord = await prisma.users.create({
-          data: {
-            id: userId,
-            email,
-            name,
-          },
-        });
+        userRecord = await executeWithRetry(
+          (db) =>
+            db.users.create({
+              data: {
+                id: userId,
+                email,
+                name,
+              },
+            }),
+          prisma
+        );
       } else {
         // Create new user
-        userRecord = await prisma.users.create({
-          data: {
-            id: userId,
-            email,
-            name,
-          },
-        });
+        userRecord = await executeWithRetry(
+          (db) =>
+            db.users.create({
+              data: {
+                id: userId,
+                email,
+                name,
+              },
+            }),
+          prisma
+        );
       }
     }
 

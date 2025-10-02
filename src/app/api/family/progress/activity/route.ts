@@ -13,6 +13,25 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Ensure user exists in database
+    const user = await prisma.users.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      console.warn(
+        `User ${userId} not found in database. User needs to sync first.`
+      );
+      return NextResponse.json(
+        {
+          error: "User not synced",
+          message: "Please refresh the page to complete user setup.",
+          code: "USER_NOT_SYNCED",
+        },
+        { status: 404 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const familyId = searchParams.get("familyId");
     const months = parseInt(searchParams.get("months") || "3");

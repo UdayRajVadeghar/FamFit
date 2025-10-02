@@ -1,3 +1,4 @@
+import { executeWithRetry } from "@/lib/db-utils";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
@@ -20,13 +21,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find the family by invite code
-    const family = await prisma.family.findUnique({
-      where: {
-        inviteCode: inviteCode.trim(),
-        isActive: true,
-      },
-    });
+    // Find the family by invite code - with retry logic
+    const family = await executeWithRetry(
+      (db) =>
+        db.family.findUnique({
+          where: {
+            inviteCode: inviteCode.trim(),
+            isActive: true,
+          },
+        }),
+      prisma
+    );
 
     if (!family) {
       return NextResponse.json(
@@ -35,15 +40,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user is already a member
-    const existingMember = await prisma.familyMember.findUnique({
-      where: {
-        userId_familyId: {
-          userId,
-          familyId: family.id,
-        },
-      },
-    });
+    // Check if user is already a member - with retry logic
+    const existingMember = await executeWithRetry(
+      (db) =>
+        db.familyMember.findUnique({
+          where: {
+            userId_familyId: {
+              userId,
+              familyId: family.id,
+            },
+          },
+        }),
+      prisma
+    );
 
     if (existingMember) {
       return NextResponse.json(
@@ -52,14 +61,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Add user as a member
-    await prisma.familyMember.create({
-      data: {
-        userId,
-        familyId: family.id,
-        role: "member",
-      },
-    });
+    // Add user as a member - with retry logic
+    await executeWithRetry(
+      (db) =>
+        db.familyMember.create({
+          data: {
+            userId,
+            familyId: family.id,
+            role: "member",
+          },
+        }),
+      prisma
+    );
 
     return NextResponse.json({
       success: true,

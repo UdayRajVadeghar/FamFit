@@ -1,3 +1,4 @@
+import { executeWithRetry } from "@/lib/db-utils";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
@@ -10,24 +11,28 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get all families the user is a member of
-    const familyMemberships = await prisma.familyMember.findMany({
-      where: {
-        userId,
-      },
-      include: {
-        family: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            goal: true,
-            isActive: true,
-            createdAt: true,
+    // Get all families the user is a member of - with retry logic
+    const familyMemberships = await executeWithRetry(
+      (db) =>
+        db.familyMember.findMany({
+          where: {
+            userId,
           },
-        },
-      },
-    });
+          include: {
+            family: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                goal: true,
+                isActive: true,
+                createdAt: true,
+              },
+            },
+          },
+        }),
+      prisma
+    );
 
     const families = familyMemberships.map((membership) => ({
       ...membership.family,

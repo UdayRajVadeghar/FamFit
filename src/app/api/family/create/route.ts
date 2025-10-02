@@ -1,3 +1,4 @@
+import { executeWithRetry } from "@/lib/db-utils";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
@@ -20,26 +21,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create the family
-    const family = await prisma.family.create({
-      data: {
-        name: name.trim(),
-        description: description?.trim() || null,
-        goal: goal?.trim() || null,
-        startDate: startDate ? new Date(startDate) : null,
-        endDate: endDate ? new Date(endDate) : null,
-        createdBy: userId,
-      },
-    });
+    // Create the family - with retry logic
+    const family = await executeWithRetry(
+      (db) =>
+        db.family.create({
+          data: {
+            name: name.trim(),
+            description: description?.trim() || null,
+            goal: goal?.trim() || null,
+            startDate: startDate ? new Date(startDate) : null,
+            endDate: endDate ? new Date(endDate) : null,
+            createdBy: userId,
+          },
+        }),
+      prisma
+    );
 
-    // Add the creator as an admin member
-    await prisma.familyMember.create({
-      data: {
-        userId,
-        familyId: family.id,
-        role: "admin",
-      },
-    });
+    // Add the creator as an admin member - with retry logic
+    await executeWithRetry(
+      (db) =>
+        db.familyMember.create({
+          data: {
+            userId,
+            familyId: family.id,
+            role: "admin",
+          },
+        }),
+      prisma
+    );
 
     return NextResponse.json({
       success: true,

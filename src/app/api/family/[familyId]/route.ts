@@ -1,3 +1,4 @@
+import { executeWithRetry } from "@/lib/db-utils";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
@@ -15,15 +16,26 @@ export async function GET(
 
     const { familyId } = await params;
 
-    const family = await prisma.family.findUnique({
-      where: {
-        id: familyId,
-        isActive: true,
-      },
-      include: {
-        members: {
+    const family = await executeWithRetry(
+      (db) =>
+        db.family.findUnique({
+          where: {
+            id: familyId,
+            isActive: true,
+          },
           include: {
-            user: {
+            members: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                  },
+                },
+              },
+            },
+            creator: {
               select: {
                 id: true,
                 name: true,
@@ -31,16 +43,9 @@ export async function GET(
               },
             },
           },
-        },
-        creator: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-    });
+        }),
+      prisma
+    );
 
     if (!family) {
       return NextResponse.json({ error: "Family not found" }, { status: 404 });

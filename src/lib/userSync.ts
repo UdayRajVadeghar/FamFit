@@ -7,12 +7,15 @@ export function useUserSync() {
   const { user, isLoaded: userLoaded } = useUser();
   const { isLoaded: authLoaded } = useAuth();
   const [synced, setSynced] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     if (!userLoaded || !authLoaded || !user || synced) return;
 
     const syncUser = async () => {
       try {
+        console.log("Syncing user to database...");
+
         // Use server-side API endpoint for user sync
         // This avoids RLS issues by using Prisma with service-level access
         const response = await fetch("/api/user/sync", {
@@ -25,21 +28,41 @@ export function useUserSync() {
         if (!response.ok) {
           const errorData = await response.json();
           console.error("User sync failed:", errorData);
+
+          // Retry up to 3 times for 409 conflicts (duplicate email)
+          if (errorData.error === "Email conflict" && retryCount < 3) {
+            console.log(`Retrying user sync (attempt ${retryCount + 1}/3)...`);
+            setRetryCount((prev) => prev + 1);
+            setTimeout(() => {
+              syncUser();
+            }, 2000 * (retryCount + 1)); // Exponential backoff
+          }
           return;
         }
 
         const data = await response.json();
-        console.log("User synced successfully:", data.user);
+        console.log("✅ User synced successfully:", data.user);
         setSynced(true);
       } catch (error) {
         console.error("Failed to sync user:", error);
+
+        // Retry on network errors
+        if (retryCount < 3) {
+          console.log(
+            `Retrying user sync after error (attempt ${retryCount + 1}/3)...`
+          );
+          setRetryCount((prev) => prev + 1);
+          setTimeout(() => {
+            syncUser();
+          }, 2000 * (retryCount + 1));
+        }
       }
     };
 
     syncUser();
-  }, [user, userLoaded, authLoaded, synced]);
+  }, [user, userLoaded, authLoaded, synced, retryCount]);
 
-  return { user };
+  return { user, synced };
 }
 
 export async function syncUserToSupabase(
