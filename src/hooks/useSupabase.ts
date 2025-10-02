@@ -1,7 +1,7 @@
 "use client";
 
-import { supabase } from "@/lib/supabase";
 import type { Database } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { useAuth, useSession } from "@clerk/nextjs";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
@@ -12,7 +12,8 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 export function useSupabase() {
   const { getToken } = useAuth();
   const { isLoaded } = useSession();
-  const [authenticatedClient, setAuthenticatedClient] = useState<SupabaseClient<Database> | null>(null);
+  const [authenticatedClient, setAuthenticatedClient] =
+    useState<SupabaseClient<Database> | null>(null);
 
   useEffect(() => {
     const createAuthenticatedClient = async () => {
@@ -21,8 +22,16 @@ export function useSupabase() {
       let accessToken: string | null = null;
       try {
         accessToken = await getToken({ template: "supabase" });
+        if (!accessToken) {
+          console.warn(
+            "Clerk JWT template 'supabase' returned null. Please configure the template in Clerk Dashboard."
+          );
+        }
       } catch (error) {
-        console.log("No token available:", error);
+        console.error("Failed to get Supabase token from Clerk:", error);
+        console.error(
+          "Make sure you have a JWT template named 'supabase' configured in Clerk Dashboard"
+        );
         // Return the singleton instance for unauthenticated usage
         setAuthenticatedClient(null);
         return;

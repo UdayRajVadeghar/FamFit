@@ -30,7 +30,10 @@ export function useUserSync() {
               upsert: (
                 data: unknown,
                 options: { onConflict: string }
-              ) => Promise<{ data?: unknown; error?: { message: string } }>;
+              ) => Promise<{
+                data?: unknown;
+                error?: { message: string; code?: string };
+              }>;
             };
           }
         )
@@ -42,7 +45,15 @@ export function useUserSync() {
         void _data; // Mark as intentionally unused
 
         if (error) {
-          console.error("User sync failed:", error.message || "Unknown error");
+          console.error("User sync failed:", error);
+          if (error.message?.includes("409") || error.code === "409") {
+            console.error(
+              "This is likely due to missing Clerk JWT template or Supabase RLS policies"
+            );
+            console.error(
+              "See: https://clerk.com/docs/integrations/databases/supabase"
+            );
+          }
         }
       } catch (error) {
         console.error("Failed to sync user:", error);
